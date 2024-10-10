@@ -1,6 +1,14 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Use CORS middleware for CORS
+
+  app.use(cors());
+  app.use(cors({
+    origin: 'http://localhost:4200'  // Allow only this domain
+}));
 
    // Middleware to parse incoming requests
    app.use(express.json());
@@ -15,10 +23,11 @@ const PORT = process.env.PORT || 3000;
    const getRecommendedProducts = (filters) => {
        // Logic to fetch product data based on filters like category, style, etc.
        return [
-           { id: 1, name: 'Product A', price: 100 },
-           { id: 2, name: 'Product B', price: 120 },
+           { name: 'KAHANA', description: 'Polarized Aviator Sunglasses',image:'https://images.mauijim.com/sunglasses/640/RS640-01_front.jpg?imwidth=900' },
+           { name: 'BABY BEACH',  description: 'Polarized Aviator Sunglasses',image:'https://images.mauijim.com/sunglasses/245/P245-16R_front.jpg?imwidth=900'},
        ];
    };
+
 
    app.listen(PORT, () => {
        console.log(`Server is running on port ${PORT}`);
