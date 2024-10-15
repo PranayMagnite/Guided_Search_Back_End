@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Use CORS middleware for CORS
 
-  app.use(cors());
+  //app.use(cors());
   app.use(cors({
     origin: 'http://localhost:4200'  // Allow only this domain
 }));
@@ -18,6 +20,14 @@ const PORT = process.env.PORT || 3000;
        const recommendations = getRecommendedProducts(req.query);
        res.json(recommendations);
    });
+
+
+   // MongoDB Connection
+const MONGO_URI = 'mongodb+srv://guidedsearch:swBlRhmIdj1VYVAQ@cluster0.ryu9y.mongodb.net/'; // or your Atlas URL
+mongoose
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
    // Function to get recommended products (placeholder)
    const getRecommendedProducts = (filters) => {
