@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const OpenAIApi = require('openai');
+//require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -23,11 +25,11 @@ const PORT = process.env.PORT || 3000;
 
 
    // MongoDB Connection
-const MONGO_URI = 'mongodb+srv://guidedsearch:swBlRhmIdj1VYVAQ@cluster0.ryu9y.mongodb.net/'; // or your Atlas URL
-mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// const MONGO_URI = 'mongodb+srv://guidedsearch:swBlRhmIdj1VYVAQ@cluster0.ryu9y.mongodb.net/'; // or your Atlas URL
+// mongoose
+//   .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+//   .then(() => console.log('Connected to MongoDB'))
+//   .catch((err) => console.error('MongoDB connection error:', err));
 
    // Function to get recommended products (placeholder)
    const getRecommendedProducts = (filters) => {
@@ -42,4 +44,41 @@ mongoose
    app.listen(PORT, () => {
        console.log(`Server is running on port ${PORT}`);
    });
+
+     // Initialize OpenAI API
+    const openai = new OpenAIApi({
+      apiKey:'sk-fUvARr1dO2chu1f2MVHviP_uq0EF-_g3kvkefQcuEcT3BlbkFJyEjjssTEhRfyj4ox6Z8Qm6HTXkkGVg2jjOGyda2IIA',
+      dangerouslyAllowBrowser: true  // This is the default and can be omitted
+    });
+  
+  app.get('/api/guided-search', async (req, res) => {
+    //const { userMessage } = req.body;
+    const { userMessage } = "best mauijim sunglasses";
+
+  
+    try {
+      // OpenAI API call
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: `You are a chatbot helping users select Maui Jim sunglasses. Ask them guided questions step-by-step and suggest products accordingly.\nUser: ${userMessage}\nBot:` }],
+        stream: true,
+
+      });
+
+      for await (const chunk of response) {
+        
+      const botMessage = chunk.choices[0]?.delta?.content || '';
+      this.messages.push({ sender: 'bot', text: botMessage || 'I could not process that, please try again.' });
+     
+      }
+  
+
+    } catch (error) {
+      console.error('Error:', error);
+      this.messages.push({ sender: 'bot', text: 'Something went wrong. Please try again.' });
+    }
+    res.json(this.messages);
+  });
+  
+
    
