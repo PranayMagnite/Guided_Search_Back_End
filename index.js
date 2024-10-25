@@ -42,6 +42,16 @@ const PORT = process.env.PORT || 3000;
       apiKey:process.env.KEY,
  
     });
+
+    //get secreat key from client portal DB
+    app.post('/api/secreat-key',(req,res) =>{
+      const secretKey = "aloha"; // get it from db
+      if (secretKey) {
+        res.json({ key: secretKey });
+      } else {
+        res.status(404).json({ error: 'Secret key not found' });
+      }
+    });
   
   app.post('/api/guided-search', async (req, res) => {
    
@@ -55,9 +65,8 @@ const PORT = process.env.PORT || 3000;
         temperature: 0.5,
 
       });
- 
+     console.log(response);
       res.json(response);
-  
      
     } catch (error) {
       console.error('Error:', error);
