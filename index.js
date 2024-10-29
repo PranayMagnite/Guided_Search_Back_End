@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 3000;
    });
 
 
-   // Function to get recommended products (placeholder)
+   // Function to get recommended products 
    const getRecommendedProducts = (filters) => {
        return [
            { name: 'KAHANA', description: 'Polarized Aviator Sunglasses',image:'https://images.mauijim.com/sunglasses/640/RS640-01_front.jpg?imwidth=900' },
@@ -43,8 +43,8 @@ const PORT = process.env.PORT || 3000;
  
     });
 
-    //get secreat key from client portal DB
-    app.post('/api/secreat-key',(req,res) =>{
+    //get secret key from client portal DB
+    app.post('/api/secret-key',(req,res) =>{
       const secretKey = "aloha"; // get it from db
       if (secretKey) {
         res.json({ key: secretKey });
@@ -52,6 +52,15 @@ const PORT = process.env.PORT || 3000;
         res.status(404).json({ error: 'Secret key not found' });
       }
     });
+
+    // app.post('/api/meta-prompt',(req,res) =>{
+    
+    //   if (secretKey) {
+    //     res.json({ key: secretKey });
+    //   } else {
+    //     res.status(404).json({ error: 'Secret key not found' });
+    //   }
+    // });
   
   app.post('/api/guided-search', async (req, res) => {
    
@@ -63,6 +72,7 @@ const PORT = process.env.PORT || 3000;
         model: 'gpt-3.5-turbo',
         messages: messages,
         temperature: 0.5,
+        max_tokens: 200, 
 
       });
      console.log(response);
@@ -72,8 +82,50 @@ const PORT = process.env.PORT || 3000;
       console.error('Error:', error);
       
     }
+});
 
+
+  
+app.post('/api/guided-search/update', async (req, res) => {
+   
+  try {
+    var { messages } = req.body;  // If conversation grows too long, summarize the past and keep only the summary
+      const summary = await summarizeConversation(messages.slice(1)); // Skip system prompt   
+    console.log("update :-"+summary);
+    res.json(summary);
+   
+  } catch (error) {
+    console.error('Error:', error);
+    
+  }
+});
+
+
+
+async function summarizeConversation(messages) {
+  const summaryPrompt = `Summarize the following conversation in a concise manner:${messages.map(msg => `${msg.role}: ${msg.content}`).join('\n')}`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
+    messages: [{ role: 'system', content: summaryPrompt }],
+    temperature: 0.3, // Lower temperature for concise summaries
+    max_tokens: 200,  // Keep the summary short
   });
+
+  return response.choices[0].message.content;
+}
+
+
+// function extractKeyMessages(messages) {
+//   // Filter messages based on role or importance (e.g., user queries and key responses)
+//   return messages.filter(msg =>
+//     msg.role === 'user' || msg.content.includes('recommended')
+//   );
+// }
+
+// const keyMessages = extractKeyMessages(longMessages);
+// console.log('Key Messages:', keyMessages);
+
   
 
    
