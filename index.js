@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const OpenAIApi = require('openai');
 const app = express();
 const PORT = process.env.PORT || 3000;
+//const dbService = require('./dbService');
 
 
 // Use CORS middleware for CORS
@@ -53,14 +54,26 @@ const PORT = process.env.PORT || 3000;
       }
     });
 
-    // app.post('/api/meta-prompt',(req,res) =>{
-    
-    //   if (secretKey) {
-    //     res.json({ key: secretKey });
-    //   } else {
-    //     res.status(404).json({ error: 'Secret key not found' });
-    //   }
-    // });
+    app.post('/api/meta-prompt',(req,res) =>{
+      var clientId = req.body.clientId;
+      console.log(req.body);
+      var productName = req.body.productName;
+     var META_PROMPT = `You are a Maui Jim assistant.Help users find all kind of products based on their needs and provide customer support service. Recommend products with highlighted name & sku,short information.Focus on use case, lens type, frame style, fit, and color. Ask short follow-ups if needed and suggest multiple options when unsure.response must be in markdown format`;
+     var PDP_META_PROMPT= `you are the Maui Jim Assistant for ${productName} product.Recommend products–Suggest alternatives or complements based on user needs.Assist with purchases – Offer stock, shipping, and return info.If unsure, direct users to support or resources.response kepp short & markdown formart`;
+     var META_ef =`You are a mauijim website product expert providing concise advice`
+
+      if (clientId) {     
+        if(productName != undefined)
+          {
+            res.json({ metaData: PDP_META_PROMPT });
+          }else{
+            res.json({ metaData: META_PROMPT });
+          }
+      
+      } else {
+        res.status(404).json({ error: 'meta data not found' });
+      }
+    });
   
   app.post('/api/guided-search', async (req, res) => {
    
