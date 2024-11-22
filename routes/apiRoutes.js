@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const controller = require('../controllers/portalcontroller'); 
+const controller = require('../controllers/portalController'); 
 
 // JWT Secret
 const JWT_SECRET = 'aloha';
