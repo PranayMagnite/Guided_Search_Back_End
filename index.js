@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const OpenAIApi = require('openai');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const router = require('./apiRouter');
+
 //const dbService = require('./dbService');
 
 
@@ -17,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 
    // Middleware to parse incoming requests
    app.use(express.json());
+   app.use('/api', router); // Use the router for all `/api` routes
 
    // Sample route to get recommended products
    app.get('/api/recommendations', (req, res) => {

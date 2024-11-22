@@ -1,102 +1,87 @@
 // conversationModel.js
 const db = require('./dbConfig');
 
-
-
-// admin login
-async function getAdmin(username) {
-  const sql = 'SELECT * FROM admin WHERE username = ?';
-  const [admin] = await db.execute(sql, [username]);
- return admin;
+// Helper function for error handling
+function handleDbError(error, customMessage = 'Database operation failed') {
+  console.error('DB Error:', error.message || error);
+  // Return a structured error object
+  return { status: 500, message: customMessage, originalError: error };
 }
 
-
-
-
-async function createCustomer(name, url, portal_username, portal_password, secret_client_id, greeting_message, chatbot_prompt ) {
-  const sql = `INSERT INTO customer (name, url, portal_username, portal_password, secret_client_id, greeting_message, chatbot_prompt) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  try{
-     const [result] = await db.execute(
-      sql,
-      [name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt]
-    );
-    return result; 
-  }catch(error){
- return error;
+// Admin login
+async function getAdmin(username) {
+  try {
+    const sql = 'SELECT * FROM admin WHERE username = ?';
+    const [admin] = await db.execute(sql, [username]);
+    return admin;
+  } catch (error) {
+    throw handleDbError(error, 'Failed to retrieve admin details');
   }
-    
+}
+
+// Create a new customer
+async function createCustomer(name, url, portal_username, portal_password, secret_client_id, greeting_message, chatbot_prompt) {
+  try {
+    const sql = `INSERT INTO customer (name, url, portal_username, portal_password, secret_client_id, greeting_message, chatbot_prompt) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const [result] = await db.execute(sql, [name, url, portal_username, portal_password, secret_client_id, greeting_message, chatbot_prompt]);
+    return result;
+  } catch (error) {
+    throw handleDbError(error, 'Failed to create customer');
   }
+}
 
-
-async function getCustomers(){
+// Retrieve all customers
+async function getCustomers() {
   try {
     const [customers] = await db.execute('SELECT * FROM customer');
     return customers;
   } catch (error) {
-    return error
+    throw handleDbError(error, 'Failed to retrieve customers');
   }
-
 }
 
-
-async function updateCustomers(name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, id){
-
+// Update a customer
+async function updateCustomers(name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, id) {
   try {
     await db.execute(
       `UPDATE customer SET name = ?, url = ?, portal_username = ?, portal_password = ?, secret_client_id = ?, greeting_message = ?, chatbot_prompt = ? WHERE id = ?`,
       [name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, id]
     );
-   
+    return { message: 'Customer updated successfully' };
   } catch (error) {
-    return error;
+    throw handleDbError(error, 'Failed to update customer');
   }
 }
 
-
- async function deleteCustomer(id){
+// Delete a customer
+async function deleteCustomer(id) {
   try {
     await db.execute('DELETE FROM customer WHERE id = ?', [id]);
+    return { message: 'Customer deleted successfully' };
   } catch (error) {
-    return error;
-  } 
- }
-
- async function customerLogin(username){
-
-  const [customer] = await db.execute('SELECT * FROM customer WHERE portal_username = ?', [username]);
- return customer;
-
- }
-
- function authenticateCustomer(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(403).send('Token is required');
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.customerId = decoded.customerId;
-    next();
-  } catch (error) {
-    res.status(403).send('Invalid or expired token');
+    throw handleDbError(error, 'Failed to delete customer');
   }
 }
 
-// Portal API to Get and Update Customer Configuration
-async function customerPortal(){
+// Retrieve a customer by username
+async function getCustomer(username) {
   try {
-    const [customer] = await db.execute('SELECT name, url, greeting_message, chatbot_prompt FROM customer WHERE id = ?', [req.customerId]);
-    if (customer.length === 0) {
-      return res.status(404).send('Customer not found');
-    }
-    res.json(customer[0]);
+    const [customer] = await db.execute('SELECT * FROM customer WHERE portal_username = ?', [username]);
+    return customer;
   } catch (error) {
-    res.status(500).send(error.message);
+    throw handleDbError(error, 'Failed to retrieve customer details');
   }
 }
 
-
-
-
+// Retrieve a customer's portal configuration
+async function customerPortal(customerId) {
+  try {
+    const [customer] = await db.execute('SELECT name, url, greeting_message, chatbot_prompt FROM customer WHERE id = ?', [customerId]);
+    return customer[0];
+  } catch (error) {
+    throw handleDbError(error, 'Failed to retrieve customer portal configuration');
+  }
+}
 
 module.exports = {
   getAdmin,
@@ -104,10 +89,6 @@ module.exports = {
   getCustomers,
   updateCustomers,
   deleteCustomer,
-  customerLogin,
-  authenticateCustomer,
-  customerPortal
-
-
-
+  getCustomer,
+  customerPortal,
 };
