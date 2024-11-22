@@ -31,49 +31,40 @@ async function createCustomer(name, url, portal_username, portal_password, secre
 async function getCustomers(){
   try {
     const [customers] = await db.execute('SELECT * FROM customer');
-    res.json(customers);
+    return customers;
   } catch (error) {
-    res.status(500).send(error.message);
+    return error
   }
 
 }
 
 
-async function updateCustomers(){
+async function updateCustomers(name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, id){
 
   try {
     await db.execute(
       `UPDATE customer SET name = ?, url = ?, portal_username = ?, portal_password = ?, secret_client_id = ?, greeting_message = ?, chatbot_prompt = ? WHERE id = ?`,
       [name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, id]
     );
-    res.send('Customer updated');
+   
   } catch (error) {
-    res.status(500).send(error.message);
+    return error;
   }
 }
 
 
- async function deleteCustomer(){
+ async function deleteCustomer(id){
   try {
     await db.execute('DELETE FROM customer WHERE id = ?', [id]);
-    res.send('Customer deleted');
   } catch (error) {
-    res.status(500).send(error.message);
+    return error;
   } 
  }
 
- async function customerLogin(){
+ async function customerLogin(username){
 
   const [customer] = await db.execute('SELECT * FROM customer WHERE portal_username = ?', [username]);
-
-  // Verify username and password
-  if (customer.length === 0 || !await bcrypt.compare(password, customer[0].portal_password)) {
-    return res.status(401).send('Invalid credentials');
-  }
-
-  // Generate JWT token
-  const token = jwt.sign({ customerId: customer[0].id }, JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token });
+ return customer;
 
  }
 
@@ -110,5 +101,13 @@ async function customerPortal(){
 module.exports = {
   getAdmin,
   createCustomer,
-  getConversation
+  getCustomers,
+  updateCustomers,
+  deleteCustomer,
+  customerLogin,
+  authenticateCustomer,
+  customerPortal
+
+
+
 };

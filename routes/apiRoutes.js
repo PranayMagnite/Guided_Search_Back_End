@@ -8,6 +8,8 @@ const jwt = controller.jwt;
 
 router.post('/admin/login',authenticateAdmin,controller.adminLogin);
 
+router.post('/admin/login',authenticateAdmin,controller.adminLogin);
+
 
 
 
