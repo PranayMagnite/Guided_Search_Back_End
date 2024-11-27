@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const OpenAIApi = require('openai');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const router = require('./apiRouter');
+const router = require('./routes/apiRoutes');
 
 //const dbService = require('./dbService');
 
