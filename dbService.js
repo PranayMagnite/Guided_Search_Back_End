@@ -1,10 +1,8 @@
-// conversationModel.js
 const db = require('./dbConfig');
 
 // Helper function for error handling
 function handleDbError(error, customMessage = 'Database operation failed') {
   console.error('DB Error:', error.message || error);
-  // Return a structured error object
   return { status: 500, message: customMessage, originalError: error };
 }
 
@@ -41,11 +39,11 @@ async function getCustomers() {
 }
 
 // Update a customer
-async function updateCustomers(name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, id) {
+async function updateCustomers(name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt) {
   try {
     await db.execute(
-      `UPDATE customer SET name = ?, url = ?, portal_username = ?, portal_password = ?, secret_client_id = ?, greeting_message = ?, chatbot_prompt = ? WHERE id = ?`,
-      [name, url, portal_username, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, id]
+      `UPDATE customer SET name = ?, url = ?, portal_password = ?, secret_client_id = ?, greeting_message = ?, chatbot_prompt = ? WHERE portal_username = ?`,
+      [name, url, hashedPassword, secret_client_id, greeting_message, chatbot_prompt, portal_username]
     );
     return { message: 'Customer updated successfully' };
   } catch (error) {
@@ -54,9 +52,9 @@ async function updateCustomers(name, url, portal_username, hashedPassword, secre
 }
 
 // Delete a customer
-async function deleteCustomer(id) {
+async function deleteCustomer(portal_username) {
   try {
-    await db.execute('DELETE FROM customer WHERE id = ?', [id]);
+    await db.execute('DELETE FROM customer WHERE portal_username = ?', [portal_username]);
     return { message: 'Customer deleted successfully' };
   } catch (error) {
     throw handleDbError(error, 'Failed to delete customer');
@@ -64,9 +62,9 @@ async function deleteCustomer(id) {
 }
 
 // Retrieve a customer by username
-async function getCustomer(username) {
+async function getCustomer(portal_username) {
   try {
-    const [customer] = await db.execute('SELECT * FROM customer WHERE portal_username = ?', [username]);
+    const [customer] = await db.execute('SELECT * FROM customer WHERE portal_username = ?', [portal_username]);
     return customer;
   } catch (error) {
     throw handleDbError(error, 'Failed to retrieve customer details');
@@ -74,9 +72,9 @@ async function getCustomer(username) {
 }
 
 // Retrieve a customer's portal configuration
-async function customerPortal(customerId) {
+async function customerPortal(portal_username) {
   try {
-    const [customer] = await db.execute('SELECT name, url, greeting_message, chatbot_prompt FROM customer WHERE id = ?', [customerId]);
+    const [customer] = await db.execute('SELECT name, url, greeting_message, chatbot_prompt FROM customer WHERE portal_username = ?', [portal_username]);
     return customer[0];
   } catch (error) {
     throw handleDbError(error, 'Failed to retrieve customer portal configuration');
